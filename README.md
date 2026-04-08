@@ -1,55 +1,114 @@
-# Smart-services-platform
+# 🚀 Smart Services Platform
+
 FastAPI backend API with Swagger UI for testing, structured with models, schemas, routers, and services. Open for collaboration.
-▶️ How to Run and Test the Project
 
-Follow these steps to run the project locally and test the API using Swagger UI.
+---
 
+## ▶️ How to Run and Test the Project
 
-1️⃣ Create Virtual Environment (Recommended) & install libraries
- Open the Powershell inside the project folder and then type the following commands:
- 👉 python -m venv venv
+Follow these steps to run the project locally and test the API.
 
- 📌 Then install the following libraries:
-   -> pip install uvicorn
-   ->  pip install sqlalchemy fastapi uvicorn
-   -> pip install psycopg2-binary
-   ->  pip install fastapi uvicorn sqlalchemy passlib[bcrypt] python-jose
- 📌 Activate it:
+---
 
-         .On Windows:
-         -> venv\Scripts\activate
+## 1️⃣ Create Virtual Environment
 
-2️⃣ Run the Server 
-  -> uvicorn main:app
+Open terminal inside the project folder:
 
-3️⃣ Open Swagger UI
+```bash
+python -m venv venv
+```
 
- After running the server, open your browser and go to:
+Activate it:
 
- http://127.0.0.1:8000/docs
+### On Windows:
 
-4️⃣Test the API
-  .Choose any endpoint
-  .Click "Try it out"
-  .Enter the required data
-  .Click "Execute"
-  .View the response
+```bash
+venv\Scripts\activate
+```
 
-5️⃣🧪 Alternative Docs (ReDoc)
+### On macOS / Linux:
 
-    You can also check:
+```bash
+source venv/bin/activate
+```
 
-    http://127.0.0.1:8000/redoc
+---
 
-⚠️ Notes
-  Make sure Python is installed (3.8+)
-  Ensure all dependencies are installed correctly
-  If the port is busy, change it using:
-  uvicorn main:app --reload --port 8001
+## 2️⃣ Install Dependencies
 
+```bash
+pip install fastapi uvicorn sqlalchemy psycopg2-binary passlib[bcrypt] python-jose
+```
 
-🚀 You're Ready!
+---
 
- Now you can explore and test all API endpoints بسهولة باستخدام Swagger UI 🎉
+## 3️⃣ Configure Database (IMPORTANT)
 
-    
+Go to:
+
+```bash
+database.py
+```
+
+Update this line:
+
+```python
+DATABASE_URL = "postgresql://username:password@localhost:5432/dbname"
+```
+
+Example:
+
+```python
+DATABASE_URL = "postgresql://postgres:1234@localhost:5432/mydatabase"
+```
+
+---
+
+## 4️⃣ Run the Server
+
+```bash
+uvicorn main:app --reload
+```
+
+---
+
+## 5️⃣ Open Swagger UI
+
+Open your browser and go to:
+
+👉 http://127.0.0.1:8000/docs
+
+---
+
+## 6️⃣ Test the API
+
+* Choose any endpoint
+* Click **Try it out**
+* Enter data
+* Click **Execute**
+* View the response
+
+---
+
+## 📄 Alternative Docs (ReDoc)
+
+👉 http://127.0.0.1:8000/redoc
+
+---
+
+## ⚠️ Notes
+
+* Python 3.8+ required
+* Make sure PostgreSQL is running
+* Ensure database exists
+* If port is busy:
+
+```bash
+uvicorn main:app --reload --port 8001
+```
+
+---
+
+## ✅ You're Ready!
+
+Now you can test the API using Swagger UI 🎉
