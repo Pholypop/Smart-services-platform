@@ -1,0 +1,2 @@
+This project is built using FastAPI and follows a clean, structured architecture for better scalability and maintainability.
+The project is divided into multiple folders, each responsible for a specific role.
