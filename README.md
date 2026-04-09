@@ -2,7 +2,12 @@
 
 FastAPI backend API with Swagger UI for testing, structured with models, schemas, routers, and services. Open for collaboration.
 
+
 ---
+
+## 📸 API Testing (Swagger UI)
+
+![Swagger UI](assets/swagger1.png)
 
 ## ▶️ How to Run and Test the Project
 
