@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models.servicecategory import ServiceCategory
+from models.service_category import ServiceCategory
 
 
 def create_category(db: Session, data):

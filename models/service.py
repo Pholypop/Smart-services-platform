@@ -2,6 +2,8 @@ from sqlalchemy import Column, BigInteger, String, Boolean, Float, Integer, Date
 from sqlalchemy.orm import relationship
 from database import Base
 import enum
+from datetime import datetime
+
 
 
 class ServiceStatus(enum.Enum):
@@ -15,15 +17,15 @@ class Service(Base):
 
     id = Column(BigInteger, primary_key=True, index=True)
 
-    provider_id = Column(BigInteger, ForeignKey("provider.id"), nullable=False)
+    provider_id = Column(BigInteger, ForeignKey("provider.id", ondelete="CASCADE"), nullable=False)
 
     title = Column(String, nullable=False)
     description = Column(String)
 
     status = Column(Enum(ServiceStatus), default=ServiceStatus.DRAFT)
 
-    created_at = Column(DateTime)
-    updated_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     deleted = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
@@ -33,11 +35,15 @@ class Service(Base):
     rating_count = Column(Integer, default=0)
 
     currency = Column(String)
-    category_id = Column(BigInteger, ForeignKey("service_category.id"), nullable=False)
+    category_id = Column(BigInteger, ForeignKey("service_category.id", ondelete="CASCADE"), nullable=False)
 
     publication_date = Column(DateTime)
+    
+    image_url = Column(String, nullable=True) 
+    
 
     # العلاقات
     provider = relationship("Provider", back_populates="services")
     tasks = relationship("Task", back_populates="service")
     category = relationship("ServiceCategory", back_populates="services")
+    

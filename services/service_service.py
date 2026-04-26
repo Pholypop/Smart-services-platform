@@ -3,9 +3,15 @@ from models.service import Service
 from sqlalchemy.orm import joinedload
 from models.service import Service
 from models.service import ServiceStatus
+from models.task import Task
 
 def create_service(db: Session, data):
-    service = Service(**data.dict())
+    payload = data.dict()
+
+    if "status" in payload and isinstance(payload["status"], str):
+        payload["status"] = ServiceStatus(payload["status"])
+
+    service = Service(**payload)
 
     db.add(service)
     db.commit()
@@ -17,13 +23,15 @@ def create_service(db: Session, data):
 def get_service(db: Session, service_id: int):
     return (
         db.query(Service)
-        .options(joinedload(Service.tasks))  # 🔥 Nested
+        .options(joinedload(Service.tasks))
         .filter(Service.id == service_id)
         .first()
     )
 
 def get_all_services(db: Session):
-    return db.query(Service).all()
+    return db.query(Service).filter(
+        Service.deleted == False # 🔥 جلب الخدمات غير المحذوفة فقط
+    ).options(joinedload(Service.tasks)).all()
 
 def update_service(db: Session, service_id: int, data):
     service = db.query(Service).filter(Service.id == service_id).first()
@@ -31,7 +39,7 @@ def update_service(db: Session, service_id: int, data):
     if not service:
         return None
 
-    for key, value in data.dict().items():
+    for key, value in data.dict(exclude_unset=True).items():
         setattr(service, key, value)
 
     db.commit()
@@ -44,6 +52,8 @@ def delete_service(db: Session, service_id: int):
 
     if not service:
         return False
+    
+    service.deleted = True
 
     db.delete(service)
     db.commit()
@@ -91,13 +101,13 @@ def deactivate_service(db, service_id):
 def is_published(service):
     return service.status == ServiceStatus.PUBLISHED
 
-def change_status(db, service_id, new_status):
+def change_status(db: Session, service_id: int, new_status: ServiceStatus):
     service = db.query(Service).filter(Service.id == service_id).first()
 
     if not service:
         return None
 
-    service.status = new_status
+    service.status = new_status  # 👈 Enum فقط
 
     db.commit()
     db.refresh(service)
@@ -158,6 +168,50 @@ def calculate_total_price(service):
             total += task.price
 
     return total
+
+def updateServiceImage(db: Session, service_id: int, new_image_url: str):
+    service = db.query(Service).filter(Service.id == service_id).first()
+
+    if not service:
+        return None
+
+    service.image_url = new_image_url
+
+    db.commit()
+    db.refresh(service)
+
+    return service
+
+def removeServiceImage(db: Session, service_id: int):
+    service = db.query(Service).filter(Service.id == service_id).first()
+
+    if not service:
+        return False
+
+    service.image_url = None
+
+    db.commit()
+    db.refresh(service)
+
+    return True
+
+def getServiceImage(db: Session, service_id: int):
+    service = db.query(Service).filter(Service.id == service_id).first()
+
+    if not service:
+        return None
+
+    return {
+        "service_id": service.id,
+        "image_url": service.image_url
+    }
+
+
+
+    
+
+
+
 
 
 

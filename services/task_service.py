@@ -92,3 +92,42 @@ def mark_optional(db, task_id):  #خياري
 
 def is_mandatory(task):
     return task.mandatory
+
+def updateImage(db: Session, task_id: int, new_image_url: str):
+    task = db.query(Task).filter(Task.id == task_id).first()
+
+    if not task:
+        return None
+
+    task.image_url = new_image_url
+
+    db.commit()
+    db.refresh(task)
+
+    return task
+
+def removeImage(db: Session, task_id: int):
+    task = db.query(Task).filter(Task.id == task_id).first()
+
+    if not task:
+        return False
+
+    task.image_url = None
+
+    db.commit()
+    db.refresh(task)
+
+    return True
+
+def getImage(db: Session, task_id: int):
+    task = db.query(Task).filter(Task.id == task_id).first()
+
+    if not task:
+        return None
+
+    return {
+        "task_id": task.id,
+        "image_url": task.image_url
+    }
+
+

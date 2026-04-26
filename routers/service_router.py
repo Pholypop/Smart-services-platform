@@ -3,6 +3,13 @@ from sqlalchemy.orm import Session
 from database import SessionLocal
 from schemas.service import ServiceCreate, ServiceResponse
 from services import service_service
+from fastapi import UploadFile, File
+import shutil
+import os
+import uuid
+from models.service import ServiceStatus
+from schemas.task import TaskCreate
+
 
 router = APIRouter(prefix="/services", tags=["Services"])
 
@@ -79,8 +86,8 @@ def get_total_price(service_id: int, db: Session = Depends(get_db)):
 
     return {"total_price": total}
 
-@router.patch("/{service_id}/publish")
-def publish(service_id: int, db: Session = Depends(get_db)):
+#@router.patch("/{service_id}/publish")
+#def publish(service_id: int, db: Session = Depends(get_db)):
     return service_service.publish_service(db, service_id)
 
 @router.patch("/{service_id}/unpublish")
@@ -92,12 +99,16 @@ def deactivate(service_id: int, db: Session = Depends(get_db)):
     return service_service.deactivate_service(db, service_id)
 
 @router.patch("/{service_id}/status")
-def change_status(service_id: int, status: str, db: Session = Depends(get_db)):
+def change_status(
+    service_id: int,
+    status: ServiceStatus,
+    db: Session = Depends(get_db)
+):
     return service_service.change_status(db, service_id, status)
 
 @router.post("/{service_id}/tasks")
-def add_task(service_id: int, task: dict, db: Session = Depends(get_db)):
-    return service_service.add_task_to_service(db, service_id, task)
+def add_task(service_id: int, task: TaskCreate, db: Session = Depends(get_db)):
+    return service_service.add_task_to_service(db, service_id, task.dict())
 
 @router.delete("/tasks/{task_id}")
 def remove_task(task_id: int, db: Session = Depends(get_db)):
@@ -131,6 +142,58 @@ def is_in_category(service_id: int, category_id: int, db: Session = Depends(get_
     return {
         "is_in_category": service_service.is_in_category(service, category_id)
     }
+
+@router.patch("/{service_id}/image")
+def update_service_image(
+    service_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    # 📌 التحقق من نوع الملف
+    allowed_types = ["image/jpeg", "image/png", "image/jpg"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Invalid image type")
+
+    # 📌 قراءة الملف للتحقق من الحجم
+    content = file.file.read()
+    if len(content) > 2 * 1024 * 1024:  # 2MB
+        raise HTTPException(status_code=400, detail="File too large")
+
+    # إعادة المؤشر للبداية
+    file.file.seek(0)
+
+    # 📌 إنشاء اسم عشوائي
+    import uuid, os, shutil
+    file_extension = file.filename.split(".")[-1]
+    file_name = f"{uuid.uuid4()}.{file_extension}"
+
+    os.makedirs("uploads", exist_ok=True)
+    file_path = os.path.join("uploads", file_name)
+
+    # 📌 حذف الصورة القديمة (إن وجدت)
+    service = service_service.get_service(db, service_id)
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+
+    if service.image_url and os.path.exists(service.image_url):
+        os.remove(service.image_url)
+
+    # 📌 حفظ الصورة الجديدة
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # 📌 تحديث DB
+    updated_service = service_service.updateServiceImage(db, service_id, file_path)
+
+    return updated_service
+
+@router.delete("/{service_id}/image")
+def remove_service_image(service_id: int, db: Session = Depends(get_db)):
+    return service_service.removeServiceImage(db, service_id)
+
+@router.get("/{service_id}/image")
+def get_service_image(service_id: int, db: Session = Depends(get_db)):
+    return service_service.getServiceImage(db, service_id)
 
 
 
